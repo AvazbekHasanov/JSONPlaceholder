@@ -105,8 +105,9 @@ export default {
       this.permissionError = true;
     },
     async getCameraStream() {
-      console.log("getCameraStream", this.stream.getTracks());
+      
       if (this.stream) {
+        console.log("getCameraStream", this.stream.getTracks());
         this.stream.getTracks().forEach(track => track.stop());
       }
 
