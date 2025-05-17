@@ -74,18 +74,23 @@ export default {
     async openCameraModal() {
       this.permissionError = false;
       const hasPermission = await this.checkCameraPermission();
-      
+      console.log("hasPermission", hasPermission, "this.retryAttempts", this.retryAttempts);
+
       if (!hasPermission) {
         this.showModal = true;
         this.permissionError = true;
         return;
       }
 
+      // Show the modal first to ensure the video element is rendered
+      this.showModal = true;
+      // Wait for the next tick to ensure the DOM is updated
+      await this.$nextTick();
+
       while (this.retryAttempts < this.maxRetries) {
         try {
           await this.getCameraStream();
           await this.getCameraDevices();
-          this.showModal = true;
           this.retryAttempts = 0; // Reset on success
           return;
         } catch (error) {
@@ -97,7 +102,6 @@ export default {
         }
       }
 
-      this.showModal = true;
       this.permissionError = true;
     },
     async getCameraStream() {
@@ -113,6 +117,11 @@ export default {
       };
 
       this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      // Ensure the video element exists before setting srcObject
+      if (!this.$refs.video) {
+        throw new Error('Video element not found in DOM');
+      }
       this.$refs.video.srcObject = this.stream;
     },
     async getCameraDevices() {
